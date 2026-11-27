@@ -10,7 +10,8 @@ This document provides technical guidance, architecture overviews, and troublesh
 Macos-Github-Widget/
 ├── ContribHeatmap/                      # Primary Xcode project & Swift package
 │   ├── ContribHeatmap/                  # Host macOS companion application
-│   │   ├── ContribHeatmapApp.swift      # App lifecycle & URL forwarder
+│   │   ├── ContribHeatmapApp.swift      # App lifecycle, dashboard & sync controls
+│   │   ├── ActivityDataService.swift    # Keychain token & private JSON synchronization
 │   │   ├── Info.plist                   # App configuration & bundle metadata
 │   │   └── Assets.xcassets/             # AppIcon, AccentColor & Level0-4 colors
 │   ├── ContribHeatmapWidget/            # WidgetKit extension bundle
