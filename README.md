@@ -69,6 +69,35 @@ Test any GitHub user profile in real-time, inspect both Small and Medium widget 
 
 ---
 
+## 🏃 Running Activity source (experimental)
+
+The `feature/running-activity-source` branch adds a second selectable data source alongside the original GitHub Contributions heatmap.
+
+### How it works
+
+1. The activity pipeline publishes a rolling 365-day `data/activity_data.json` file to the private `StheBerga/running-heatmap-data` repository.
+2. In the GitHeatmap companion app, paste a GitHub **fine-grained personal access token** and choose **Save & Sync**.
+3. The app downloads the JSON through the GitHub Contents API, validates its schema and date window, and stores the non-secret data in the shared App Group container.
+4. In the macOS widget's **Edit Widget** settings, choose **Running Activity** as the data source. The existing **GitHub Contributions** source remains the default.
+
+### Token permissions and storage
+
+Create a fine-grained token in GitHub and configure it as follows:
+
+- **Resource owner:** `StheBerga`
+- **Repository access:** Only select repositories → `running-heatmap-data`
+- **Repository permissions:** Contents → Read-only
+
+The token is stored in the macOS Keychain. It is not written to the JSON cache or shared with the widget extension. Only the downloaded activity JSON is placed in the App Group container `group.com.stheberga.githeatmap`.
+
+To refresh the local widget data after the pipeline publishes a new JSON file, open the companion app and select **Sync using saved token**. WidgetKit timeline refreshes read the local copy; they do not independently download the private file.
+
+### Development status
+
+This source is experimental and lives on the feature branch. Its CI workflow performs a Swift package build, runs the logic test runner, and builds the macOS app/widget targets without code signing. A signed local build and runtime verification still require Xcode and an Apple Developer signing setup with the App Group enabled for both targets.
+
+---
+
 ## 🛠️ System Requirements
 
 | Specification | Requirement |
