@@ -194,7 +194,7 @@ swift run cli-heatmap Jeetchavan02 20
 
 ## 🧪 Unit Testing
 
-Run the built-in 39-point test suite covering date math, quartile thresholds, and API decoding:
+Run the built-in logic test runner covering calendar math, quartile thresholds, GitHub API decoding, and activity JSON validation:
 
 ```bash
 cd ContribHeatmap
