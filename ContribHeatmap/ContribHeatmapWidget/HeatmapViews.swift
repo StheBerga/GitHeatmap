@@ -99,7 +99,7 @@ private struct AccentableCellModifier: ViewModifier {
 
 struct HeatmapHeader: View {
     let username: String
-    let totalCount: Int
+    let totalText: String
     let weekCount: Int
     let isSmall: Bool
 
@@ -107,7 +107,7 @@ struct HeatmapHeader: View {
         HStack(alignment: .center, spacing: 4) {
             if isSmall {
                 HStack(spacing: 0) {
-                    Text("\(totalCount)")
+                    Text(totalText)
                         .font(.system(.caption, design: .rounded).weight(.bold))
                         .foregroundStyle(.primary)
                         .widgetAccentable()
@@ -200,8 +200,8 @@ struct HeatmapWidgetView: View {
             VStack(spacing: headerSpacing) {
                 // Header: leading and trailing edges align exactly with the grid below
                 HeatmapHeader(
-                    username: entry.configuration.username,
-                    totalCount: entry.totalCount,
+                    username: entry.title,
+                    totalText: entry.totalDisplay,
                     weekCount: weekCount,
                     isSmall: !isMedium
                 )
@@ -255,6 +255,7 @@ struct HeatmapWidgetView: View {
 
     private var profileURL: URL? {
         let trimmed = entry.configuration.username.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard entry.configuration.source == .githubContributions else { return URL(string: "https://github.com/StheBerga/running-heatmap-data") }
         guard !trimmed.isEmpty else { return nil }
         return URL(string: "https://github.com/\(trimmed)")
     }
