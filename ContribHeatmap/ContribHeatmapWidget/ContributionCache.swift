@@ -45,7 +45,7 @@ actor ContributionCache {
         }
 
         let widgetContainerDir = realHome
-            .appendingPathComponent("Library/Containers/com.stheberga.GitHeatmap.GitHeatmapWidget/Data/Library/Application Support/ContribHeatmapWidget", isDirectory: true)
+            .appendingPathComponent("Library/Containers/com.stheberga.githeatmap.widget/Data/Library/Application Support/ContribHeatmapWidget", isDirectory: true)
         dirs.append(widgetContainerDir)
 
         // 2. Extension / App sandbox Application Support
@@ -57,7 +57,7 @@ actor ContributionCache {
         }
 
         // 3. App Group container (if present and directory exists)
-        let appGroupID = "group.com.stheberga.GitHeatmap"
+        let appGroupID = "group.com.stheberga.githeatmap"
         if let groupURL = fm.containerURL(forSecurityApplicationGroupIdentifier: appGroupID) {
             if !dirs.contains(groupURL) {
                 dirs.append(groupURL)
@@ -153,7 +153,7 @@ actor ContributionCache {
 
 /// Shared, non-secret activity data. The GitHub token is never written here.
 enum ActivityDataCache {
-    static let appGroupIdentifier = "group.com.stheberga.GitHeatmap"
+    static let appGroupIdentifier = "group.com.stheberga.githeatmap"
     private static let fileName = "activity_data.json"
 
     static func save(_ document: ActivityDataDocument) throws {
