@@ -57,8 +57,8 @@ actor ContributionCache {
         }
 
         // 3. App Group container (if present and directory exists)
-        let appGroupID = "group.com.stheberga.githeatmap"
-        if let groupURL = fm.containerURL(forSecurityApplicationGroupIdentifier: appGroupID) {
+        if let appGroupID = AppGroupConfiguration.identifier,
+           let groupURL = fm.containerURL(forSecurityApplicationGroupIdentifier: appGroupID) {
             if !dirs.contains(groupURL) {
                 dirs.append(groupURL)
             }
@@ -152,15 +152,26 @@ actor ContributionCache {
 // MARK: - Running Activity Cache
 
 /// Shared, non-secret activity data. The GitHub token is never written here.
+enum AppGroupConfiguration {
+    /// macOS App Group identifiers use the signing Team ID prefix, not "group.".
+    /// The build expands this value independently for the host app and widget extension.
+    static var identifier: String? {
+        guard let value = Bundle.main.object(forInfoDictionaryKey: "ActivityAppGroupIdentifier") as? String,
+              !value.isEmpty,
+              !value.contains("$(") else { return nil }
+        return value
+    }
+}
+
 enum ActivityDataCache {
-    static let appGroupIdentifier = "group.com.stheberga.githeatmap"
     private static let fileName = "activity_data.json"
 
     static func save(_ document: ActivityDataDocument) throws {
         try document.validate()
-        guard let directory = FileManager.default.containerURL(
-            forSecurityApplicationGroupIdentifier: appGroupIdentifier
-        ) else {
+        guard let groupIdentifier = AppGroupConfiguration.identifier,
+              let directory = FileManager.default.containerURL(
+                forSecurityApplicationGroupIdentifier: groupIdentifier
+              ) else {
             throw ActivityDataStoreError.appGroupUnavailable
         }
         let data = try JSONEncoder().encode(document)
@@ -170,9 +181,10 @@ enum ActivityDataCache {
     }
 
     static func loadDocument() -> ActivityDataDocument? {
-        guard let directory = FileManager.default.containerURL(
-            forSecurityApplicationGroupIdentifier: appGroupIdentifier
-        ) else { return nil }
+        guard let groupIdentifier = AppGroupConfiguration.identifier,
+              let directory = FileManager.default.containerURL(
+                forSecurityApplicationGroupIdentifier: groupIdentifier
+              ) else { return nil }
         let url = directory.appendingPathComponent(fileName)
         guard let data = try? Data(contentsOf: url),
               let document = try? JSONDecoder().decode(ActivityDataDocument.self, from: data),
