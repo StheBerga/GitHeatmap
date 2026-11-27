@@ -147,3 +147,47 @@ actor ContributionCache {
         return f
     }
 }
+
+
+// MARK: - Running Activity Cache
+
+/// Shared, non-secret activity data. The GitHub token is never written here.
+enum ActivityDataCache {
+    static let appGroupIdentifier = "group.com.yourname.ContribHeatmap"
+    private static let fileName = "activity_data.json"
+
+    static func save(_ document: ActivityDataDocument) throws {
+        try document.validate()
+        guard let directory = FileManager.default.containerURL(
+            forSecurityApplicationGroupIdentifier: appGroupIdentifier
+        ) else {
+            throw ActivityDataStoreError.appGroupUnavailable
+        }
+        let data = try JSONEncoder().encode(document)
+        let destination = directory.appendingPathComponent(fileName)
+        try data.write(to: destination, options: .atomic)
+    }
+
+    static func loadDocument() -> ActivityDataDocument? {
+        guard let directory = FileManager.default.containerURL(
+            forSecurityApplicationGroupIdentifier: appGroupIdentifier
+        ) else { return nil }
+        let url = directory.appendingPathComponent(fileName)
+        guard let data = try? Data(contentsOf: url),
+              let document = try? JSONDecoder().decode(ActivityDataDocument.self, from: data),
+              (try? document.validate()) != nil else { return nil }
+        return document
+    }
+
+    static func loadDays() -> [ContributionDay]? {
+        try? loadDocument()?.contributionDays()
+    }
+}
+
+enum ActivityDataStoreError: LocalizedError {
+    case appGroupUnavailable
+
+    var errorDescription: String? {
+        "The shared App Group container is unavailable. Check the App Group capability for both app targets."
+    }
+}
