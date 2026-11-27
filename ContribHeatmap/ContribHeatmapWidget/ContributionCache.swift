@@ -59,7 +59,7 @@ actor ContributionCache {
         // 3. App Group container (if present and directory exists)
         let appGroupID = "group.com.stheberga.GitHeatmap"
         if let groupURL = fm.containerURL(forSecurityApplicationGroupIdentifier: appGroupID) {
-            if fm.fileExists(atPath: groupURL.path) && !dirs.contains(groupURL) {
+            if !dirs.contains(groupURL) {
                 dirs.append(groupURL)
             }
         }
@@ -164,6 +164,7 @@ enum ActivityDataCache {
             throw ActivityDataStoreError.appGroupUnavailable
         }
         let data = try JSONEncoder().encode(document)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         let destination = directory.appendingPathComponent(fileName)
         try data.write(to: destination, options: .atomic)
     }
@@ -184,7 +185,7 @@ enum ActivityDataCache {
     }
 }
 
-enum ActivityDataStoreError: LocalizedError {
+enum ActivityDataStoreError: LocalizedError, Sendable {
     case appGroupUnavailable
 
     var errorDescription: String? {
