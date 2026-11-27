@@ -173,7 +173,7 @@ struct ContentView: View {
                     }
                 }
 
-                Text("Connect the private running-heatmap-data repository using a fine-grained, read-only GitHub token.")
+                Text("Use a fine-grained GitHub token restricted to StheBerga/running-heatmap-data with Contents: Read-only permission.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
