@@ -255,7 +255,7 @@ struct HeatmapWidgetView: View {
 
     private var profileURL: URL? {
         let trimmed = entry.configuration.username.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard entry.configuration.source == .githubContributions else { return URL(string: "https://github.com/StheBerga/running-heatmap-data") }
+        guard entry.configuration.source == .githubContributions else { return nil }
         guard !trimmed.isEmpty else { return nil }
         return URL(string: "https://github.com/\(trimmed)")
     }
