@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		000000000000000000001101 /* ContribHeatmapApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000101 /* ContribHeatmapApp.swift */; };
+		000000000000000000001103 /* ActivityDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000102 /* ActivityDataService.swift */; };
 		000000000000000000001102 /* Assets.xcassets in Resources (App) */ = {isa = PBXBuildFile; fileRef = 000000000000000000000301 /* Assets.xcassets */; };
 		000000000000000000001201 /* ContributionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000201 /* ContributionModels.swift */; };
 		000000000000000000001202 /* ContributionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000202 /* ContributionService.swift */; };
@@ -41,6 +42,7 @@
 
 /* Begin PBXFileReference section */
 		000000000000000000000101 /* ContribHeatmapApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContribHeatmapApp.swift; sourceTree = "<group>"; };
+		000000000000000000000102 /* ActivityDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityDataService.swift; sourceTree = "<group>"; };
 		000000000000000000000301 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		000000000000000000000302 /* ContribHeatmap.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ContribHeatmap.entitlements; sourceTree = "<group>"; };
 		000000000000000000000201 /* ContributionModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContributionModels.swift; sourceTree = "<group>"; };
@@ -109,6 +111,7 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000000101 /* ContribHeatmapApp.swift */,
+				000000000000000000000102 /* ActivityDataService.swift */,
 				000000000000000000000301 /* Assets.xcassets */,
 				000000000000000000000302 /* ContribHeatmap.entitlements */,
 			);
@@ -270,6 +273,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				000000000000000000001101 /* ContribHeatmapApp.swift in Sources */,
+				000000000000000000001103 /* ActivityDataService.swift in Sources */,
 				000000000000000000001201 /* ContributionModels.swift in Sources */,
 				000000000000000000001202 /* ContributionService.swift in Sources */,
 				000000000000000000001203 /* ContributionCache.swift in Sources */,
