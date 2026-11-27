@@ -133,7 +133,12 @@ struct ActivityDataDocument: Codable, Sendable {
         guard timezone == "Europe/Rome" else {
             throw ActivityDataValidationError.invalidTimezone(timezone)
         }
-        guard ISO8601DateFormatter().date(from: generatedAt) != nil else {
+        let timestampParser = ISO8601DateFormatter()
+        timestampParser.formatOptions = [.withInternetDateTime]
+        let fractionalTimestampParser = ISO8601DateFormatter()
+        fractionalTimestampParser.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        guard timestampParser.date(from: generatedAt) != nil
+                || fractionalTimestampParser.date(from: generatedAt) != nil else {
             throw ActivityDataValidationError.invalidGeneratedAt
         }
         guard days.count == 365 else {
@@ -167,9 +172,11 @@ struct ActivityDataDocument: Codable, Sendable {
             }
             previousDate = date
 
+            let movingTimeInSeconds = (day.movingTime * 3_600).rounded()
             guard day.movingTime.isFinite,
                   day.movingTime >= 0,
-                  day.movingTime <= Double(Int.max / 3_600) else {
+                  movingTimeInSeconds.isFinite,
+                  movingTimeInSeconds < Double(Int.max) else {
                 throw ActivityDataValidationError.invalidMovingTime(day.date)
             }
         }
