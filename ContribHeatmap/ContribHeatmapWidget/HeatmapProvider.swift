@@ -15,6 +15,17 @@ struct HeatmapEntry: TimelineEntry {
     let isStale: Bool
     let staleSince: Date?
     let errorMessage: String?
+
+    var title: String {
+        configuration.source == .runningActivity ? "Running Activity" : configuration.username
+    }
+
+    var totalDisplay: String {
+        if configuration.source == .runningActivity {
+            return String(format: "%.1f h", Double(totalCount) / 3_600)
+        }
+        return "\(totalCount)"
+    }
 }
 
 // MARK: - Provider
@@ -46,7 +57,19 @@ struct HeatmapProvider: AppIntentTimelineProvider {
     func snapshot(for configuration: HeatmapConfigurationIntent, in context: Context) async -> HeatmapEntry {
         let weekCount = weekCount(for: context.family)
         let username = resolveUsername(from: configuration)
-        let effectiveConfig = HeatmapConfigurationIntent(username: username)
+        let effectiveConfig = HeatmapConfigurationIntent(username: username, source: configuration.source)
+
+        if configuration.source == .runningActivity {
+            if let days = ActivityDataCache.loadDays() {
+                let weeks = HeatmapGridBuilder.buildGrid(from: days, weekCount: weekCount)
+                return HeatmapEntry(date: Date(), configuration: effectiveConfig, weeks: weeks,
+                                    totalCount: HeatmapGridBuilder.totalContributions(in: weeks),
+                                    isStale: false, staleSince: nil, errorMessage: nil)
+            }
+            return HeatmapEntry(date: Date(), configuration: effectiveConfig, weeks: [], totalCount: 0,
+                                isStale: false, staleSince: nil,
+                                errorMessage: "No running activity data yet. Open GitHeatmap and sync your data.")
+        }
 
         if let cached = await ContributionCache.shared.load(for: username) {
             let weeks = HeatmapGridBuilder.buildGrid(from: cached.days, weekCount: weekCount)
@@ -80,8 +103,22 @@ struct HeatmapProvider: AppIntentTimelineProvider {
     func timeline(for configuration: HeatmapConfigurationIntent, in context: Context) async -> Timeline<HeatmapEntry> {
         let weekCount = weekCount(for: context.family)
         let username  = resolveUsername(from: configuration)
-        let effectiveConfig = HeatmapConfigurationIntent(username: username)
+        let effectiveConfig = HeatmapConfigurationIntent(username: username, source: configuration.source)
         let nextRefresh = Date().addingTimeInterval(30 * 60)
+
+        if configuration.source == .runningActivity {
+            if let days = ActivityDataCache.loadDays() {
+                let weeks = HeatmapGridBuilder.buildGrid(from: days, weekCount: weekCount)
+                let entry = HeatmapEntry(date: Date(), configuration: effectiveConfig, weeks: weeks,
+                                         totalCount: HeatmapGridBuilder.totalContributions(in: weeks),
+                                         isStale: false, staleSince: nil, errorMessage: nil)
+                return Timeline(entries: [entry], policy: .after(nextRefresh))
+            }
+            let entry = HeatmapEntry(date: Date(), configuration: effectiveConfig, weeks: [], totalCount: 0,
+                                     isStale: false, staleSince: nil,
+                                     errorMessage: "No running activity data yet. Open GitHeatmap and sync your data.")
+            return Timeline(entries: [entry], policy: .after(nextRefresh))
+        }
 
         // Fast-path: If recent cached data (< 10 min old) exists for the requested user, render instantly!
         if let cached = await ContributionCache.shared.load(for: username),
