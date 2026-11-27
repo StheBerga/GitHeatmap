@@ -169,7 +169,7 @@ struct ActivityDataDocument: Codable, Sendable {
 
             guard day.movingTime.isFinite,
                   day.movingTime >= 0,
-                  day.movingTime <= Double(Int.max) / 3_600 else {
+                  day.movingTime <= Double(Int.max / 3_600) else {
                 throw ActivityDataValidationError.invalidMovingTime(day.date)
             }
         }
