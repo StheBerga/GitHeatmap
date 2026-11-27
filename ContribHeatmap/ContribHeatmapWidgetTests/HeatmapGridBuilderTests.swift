@@ -159,16 +159,29 @@ struct HeatmapTestsRunner {
                     movingTime: offset == 0 ? 1.5 : 0
                 )
             }
-            let document = ActivityDataDocument(
-                schemaVersion: 1,
-                generatedAt: "2026-11-27T11:47:53Z",
-                timezone: "Europe/Rome",
-                window: ActivityDataWindow(start: "2025-11-28", end: "2026-11-27"),
-                days: activityDays
-            )
 
-            let encodedDocument = try JSONEncoder().encode(document)
-            let decodedDocument = try JSONDecoder().decode(ActivityDataDocument.self, from: encodedDocument)
+            // Build the fixture with the exact snake_case keys emitted by the R pipeline.
+            // This verifies the external JSON contract rather than only testing a
+            // JSONEncoder/JSONDecoder round-trip using the same Swift model.
+            let jsonDays: [[String: Any]] = activityDays.map {
+                ["date": $0.date, "moving_time": $0.movingTime]
+            }
+            let pipelinePayload: [String: Any] = [
+                "schema_version": 1,
+                "generated_at": "2026-11-27T11:47:53Z",
+                "timezone": "Europe/Rome",
+                "window": [
+                    "start": "2025-11-28",
+                    "end": "2026-11-27"
+                ],
+                "days": jsonDays
+            ]
+
+            let pipelineJSON = try JSONSerialization.data(withJSONObject: pipelinePayload)
+            let decodedDocument = try JSONDecoder().decode(
+                ActivityDataDocument.self,
+                from: pipelineJSON
+            )
             try decodedDocument.validate()
             let converted = try decodedDocument.contributionDays()
             assertEqual(converted.count, 365, "Activity data should produce 365 daily cells")
@@ -204,8 +217,10 @@ struct HeatmapTestsRunner {
             do {
                 try invalidDocument.validate()
                 assertTrue(false, "Negative moving_time must be rejected")
+            } catch ActivityDataValidationError.invalidMovingTime(let date) {
+                assertEqual(date, "2025-11-28", "Negative moving_time should be the validation failure")
             } catch {
-                assertTrue(true, "Negative moving_time rejected")
+                assertTrue(false, "Unexpected validation error for negative moving_time: \(error)")
             }
         }
 
