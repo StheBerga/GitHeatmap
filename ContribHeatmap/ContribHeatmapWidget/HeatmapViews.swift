@@ -129,7 +129,7 @@ struct HeatmapHeader: View {
                 Spacer(minLength: 8)
 
                 HStack(spacing: 0) {
-                    Text("\(totalCount)")
+                    Text(totalText)
                         .font(.system(.caption, design: .rounded).weight(.bold))
                         .foregroundStyle(.primary)
                         .widgetAccentable()
@@ -142,7 +142,7 @@ struct HeatmapHeader: View {
             }
         }
         .frame(height: 14)
-        .accessibilityLabel(isSmall ? "\(username): \(totalCount) in \(weekCount)w" : "\(username), \(totalCount) contributions in \(weekCount) weeks")
+        .accessibilityLabel(isSmall ? "\(username): \(totalText) in \(weekCount)w" : "\(username), \(totalText) in \(weekCount) weeks")
     }
 }
 
@@ -245,7 +245,7 @@ struct HeatmapWidgetView: View {
                 }
                 .frame(width: totalContentW, height: actualGridH)
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel("\(entry.configuration.username): \(entry.totalCount) contributions in the last \(weekCount) weeks")
+                .accessibilityLabel("\(entry.title): \(entry.totalDisplay) in the last \(weekCount) weeks")
             }
             .frame(width: geo.size.width, height: geo.size.height, alignment: .center)
         }
