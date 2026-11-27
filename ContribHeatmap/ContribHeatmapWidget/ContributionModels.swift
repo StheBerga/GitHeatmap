@@ -90,6 +90,159 @@ struct ContributionWeek: Sendable, Identifiable {
     }
 }
 
+// MARK: - Private Running Activity JSON
+
+/// Metadata describing the rolling date window in activity_data.json.
+struct ActivityDataWindow: Codable, Sendable {
+    let start: String
+    let end: String
+}
+
+/// One daily moving-time value. The source JSON stores hours as a decimal.
+struct ActivityDataDay: Codable, Sendable {
+    let date: String
+    let movingTime: Double
+
+    private enum CodingKeys: String, CodingKey {
+        case date
+        case movingTime = "moving_time"
+    }
+}
+
+/// Versioned document exported by StheBerga/activity-heatmap.
+struct ActivityDataDocument: Codable, Sendable {
+    let schemaVersion: Int
+    let generatedAt: String
+    let timezone: String
+    let window: ActivityDataWindow
+    let days: [ActivityDataDay]
+
+    private enum CodingKeys: String, CodingKey {
+        case schemaVersion = "schema_version"
+        case generatedAt = "generated_at"
+        case timezone
+        case window
+        case days
+    }
+
+    /// Enforces the contract produced by the private activity-data pipeline.
+    func validate() throws {
+        guard schemaVersion == 1 else {
+            throw ActivityDataValidationError.unsupportedSchema(schemaVersion)
+        }
+        guard timezone == "Europe/Rome" else {
+            throw ActivityDataValidationError.invalidTimezone(timezone)
+        }
+        guard ISO8601DateFormatter().date(from: generatedAt) != nil else {
+            throw ActivityDataValidationError.invalidGeneratedAt
+        }
+        guard days.count == 365 else {
+            throw ActivityDataValidationError.invalidDayCount(days.count)
+        }
+
+        let parser = Self.makeDateParser()
+        guard let start = parser.date(from: window.start),
+              parser.string(from: start) == window.start,
+              let end = parser.date(from: window.end),
+              parser.string(from: end) == window.end else {
+            throw ActivityDataValidationError.invalidWindow
+        }
+
+        guard days.first?.date == window.start, days.last?.date == window.end else {
+            throw ActivityDataValidationError.windowDoesNotMatchDays
+        }
+
+        var previousDate: Date?
+        let calendar = HeatmapGridBuilder.calendar
+        for day in days {
+            guard let date = parser.date(from: day.date),
+                  parser.string(from: date) == day.date else {
+                throw ActivityDataValidationError.invalidDate(day.date)
+            }
+            if let previousDate {
+                guard let expectedDate = calendar.date(byAdding: .day, value: 1, to: previousDate),
+                      parser.string(from: expectedDate) == day.date else {
+                    throw ActivityDataValidationError.nonConsecutiveDates
+                }
+            }
+            previousDate = date
+
+            guard day.movingTime.isFinite,
+                  day.movingTime >= 0,
+                  day.movingTime <= Double(Int.max) / 3_600 else {
+                throw ActivityDataValidationError.invalidMovingTime(day.date)
+            }
+        }
+
+        guard let first = parser.date(from: window.start),
+              let last = parser.date(from: window.end),
+              let expectedEnd = calendar.date(byAdding: .day, value: 364, to: first),
+              calendar.isDate(expectedEnd, inSameDayAs: last) else {
+            throw ActivityDataValidationError.invalidWindowLength
+        }
+    }
+
+    /// Converts decimal hours to seconds so the existing heatmap level algorithm
+    /// can be reused without changing the GitHub contribution source.
+    func contributionDays() throws -> [ContributionDay] {
+        try validate()
+        let parser = Self.makeDateParser()
+        return days.compactMap { day in
+            guard let date = parser.date(from: day.date) else { return nil }
+            let seconds = Int((day.movingTime * 3_600).rounded())
+            return ContributionDay(date: date, count: seconds, level: .none)
+        }
+    }
+
+    private static func makeDateParser() -> DateFormatter {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.timeZone = TimeZone(identifier: "UTC")!
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.isLenient = false
+        return formatter
+    }
+}
+
+enum ActivityDataValidationError: LocalizedError, Sendable {
+    case unsupportedSchema(Int)
+    case invalidTimezone(String)
+    case invalidGeneratedAt
+    case invalidDayCount(Int)
+    case invalidWindow
+    case windowDoesNotMatchDays
+    case invalidDate(String)
+    case nonConsecutiveDates
+    case invalidMovingTime(String)
+    case invalidWindowLength
+
+    var errorDescription: String? {
+        switch self {
+        case .unsupportedSchema(let version):
+            return "Unsupported activity JSON schema version: \(version)."
+        case .invalidTimezone(let timezone):
+            return "Unexpected activity data timezone: \(timezone)."
+        case .invalidGeneratedAt:
+            return "The activity JSON generated_at timestamp is invalid."
+        case .invalidDayCount(let count):
+            return "Expected 365 activity dates, found \(count)."
+        case .invalidWindow:
+            return "The activity JSON date window is invalid."
+        case .windowDoesNotMatchDays:
+            return "The activity JSON dates do not match its declared window."
+        case .invalidDate(let date):
+            return "Invalid activity date: \(date)."
+        case .nonConsecutiveDates:
+            return "Activity JSON dates must be consecutive calendar days."
+        case .invalidMovingTime(let date):
+            return "Invalid moving_time value for \(date)."
+        case .invalidWindowLength:
+            return "The activity JSON window must span exactly 365 days."
+        }
+    }
+}
+
 // MARK: - Errors
 
 enum ContributionError: LocalizedError, Sendable {
