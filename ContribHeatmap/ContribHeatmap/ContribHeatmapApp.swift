@@ -33,6 +33,10 @@ struct ContentView: View {
     @State private var isConfirming: Bool = false
     @State private var errorMessage: String? = nil
     @State private var statusMessage: String? = nil
+    @State private var activityTokenInput: String = ""
+    @State private var activityStatusMessage: String? = nil
+    @State private var activityErrorMessage: String? = nil
+    @State private var isSyncingActivity: Bool = false
 
     private var smallWeeks: [ContributionWeek] {
         HeatmapGridBuilder.buildGrid(from: days, weekCount: 9)
@@ -158,6 +162,72 @@ struct ContentView: View {
 
             Divider()
 
+            // Running Activity source: the token stays in macOS Keychain.
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Label("Running Activity", systemImage: "figure.run")
+                        .font(.headline)
+                    Spacer()
+                    if isSyncingActivity {
+                        ProgressView().controlSize(.small)
+                    }
+                }
+
+                Text("Connect the private running-heatmap-data repository using a fine-grained, read-only GitHub token.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                HStack(spacing: 8) {
+                    SecureField("GitHub fine-grained token", text: $activityTokenInput)
+                        .textFieldStyle(.roundedBorder)
+
+                    Button {
+                        syncRunningActivity()
+                    } label: {
+                        Label("Save & Sync", systemImage: "arrow.clockwise")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(isSyncingActivity)
+                }
+
+                HStack {
+                    Button("Sync using saved token") {
+                        activityTokenInput = ""
+                        syncRunningActivity()
+                    }
+                    .buttonStyle(.link)
+                    .disabled(isSyncingActivity)
+
+                    Spacer()
+
+                    Button("Forget token") {
+                        do {
+                            try ActivityTokenStore.delete()
+                            activityStatusMessage = "Saved token removed from Keychain."
+                            activityErrorMessage = nil
+                        } catch {
+                            activityErrorMessage = error.localizedDescription
+                        }
+                    }
+                    .buttonStyle(.link)
+                    .disabled(isSyncingActivity)
+                }
+
+                if let status = activityStatusMessage {
+                    Label(status, systemImage: "checkmark.circle.fill")
+                        .font(.caption)
+                        .foregroundStyle(.green)
+                }
+                if let error = activityErrorMessage {
+                    Label(error, systemImage: "exclamationmark.triangle.fill")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                }
+            }
+            .padding(.horizontal)
+
+            Divider()
+
             // Previews of both Widget sizes
             HStack(alignment: .top, spacing: 24) {
                 // Small Widget View (9 weeks)
@@ -266,6 +336,40 @@ struct ContentView: View {
             inputUsername = active
             previewUsername = active
             fetch(username: active)
+        }
+    }
+
+    private func syncRunningActivity() {
+        let token = activityTokenInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        isSyncingActivity = true
+        activityErrorMessage = nil
+        activityStatusMessage = nil
+
+        Task {
+            do {
+                if !token.isEmpty {
+                    try ActivityTokenStore.save(token)
+                }
+                let document = try await ActivityDataService.shared.sync()
+                let activeDays = document.days.filter { $0.movingTime > 0 }.count
+                let totalHours = document.days.reduce(0.0) { $0 + $1.movingTime }
+
+                await MainActor.run {
+                    self.activityTokenInput = ""
+                    self.isSyncingActivity = false
+                    self.activityStatusMessage = String(
+                        format: "Synced %d active days · %.1f hours total.",
+                        activeDays, totalHours
+                    )
+                    WidgetCenter.shared.reloadAllTimelines()
+                    WidgetCenter.shared.reloadTimelines(ofKind: "ContribHeatmapWidget")
+                }
+            } catch {
+                await MainActor.run {
+                    self.isSyncingActivity = false
+                    self.activityErrorMessage = error.localizedDescription
+                }
+            }
         }
     }
 
