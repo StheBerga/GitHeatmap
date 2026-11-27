@@ -124,11 +124,11 @@ actor ActivityDataService {
         }
 
         let contents = try JSONDecoder().decode(GitHubContentsResponse.self, from: data)
+        // GitHub wraps base64 content in line breaks. Remove whitespace only,
+        // then decode strictly so unexpected characters are not silently ignored.
+        let base64Content = contents.content.filter { !$0.isWhitespace }
         guard contents.encoding == "base64",
-              let jsonData = Data(
-                base64Encoded: contents.content.replacingOccurrences(of: "\n", with: ""),
-                options: .ignoreUnknownCharacters
-              ) else {
+              let jsonData = Data(base64Encoded: base64Content) else {
             throw ActivitySyncError.invalidBase64
         }
 
