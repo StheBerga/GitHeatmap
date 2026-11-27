@@ -188,9 +188,13 @@ enum ActivitySyncError: LocalizedError, Sendable {
         case .invalidResponse:
             return "GitHub returned an unexpected response for activity_data.json."
         case .httpStatus(let status):
-            return status == 401 || status == 403
-                ? "GitHub rejected the token. Check its repository access and Contents: read permission."
-                : "GitHub returned HTTP \(status) while fetching activity data."
+            if status == 401 || status == 403 {
+                return "GitHub rejected the token. Check its repository access and Contents: read permission."
+            }
+            if status == 404 {
+                return "GitHub could not find the private JSON file, or the token cannot access this repository."
+            }
+            return "GitHub returned HTTP \(status) while fetching activity data."
         case .invalidBase64:
             return "GitHub returned activity data that could not be decoded."
         case .keychain(let status):
@@ -210,6 +214,7 @@ actor ActivityDataService {
         let token = try ActivityTokenStore.load()
         var request = URLRequest(url: fileURL)
         request.httpMethod = "GET"
+        request.setValue("GitHeatmap macOS app", forHTTPHeaderField: "User-Agent")
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
         request.setValue("2022-11-28", forHTTPHeaderField: "X-GitHub-Api-Version")
