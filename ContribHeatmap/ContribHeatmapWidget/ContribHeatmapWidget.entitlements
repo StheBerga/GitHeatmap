@@ -8,7 +8,7 @@
     <true/>
     <key>com.apple.security.application-groups</key>
     <array>
-        <string>group.com.yourname.ContribHeatmap</string>
+        <string>group.com.stheberga.GitHeatmap</string>
     </array>
 </dict>
 </plist>
