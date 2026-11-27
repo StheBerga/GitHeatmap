@@ -141,6 +141,72 @@ struct HeatmapTestsRunner {
             print("❌ Missing count decoding failed: \(error)")
         }
 
+        // MARK: - Running Activity JSON Contract
+        do {
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.calendar = Calendar(identifier: .gregorian)
+            formatter.timeZone = TimeZone(identifier: "UTC")!
+            formatter.dateFormat = "yyyy-MM-dd"
+
+            let start = formatter.date(from: "2025-11-28")!
+            let activityDays = (0..<365).compactMap { offset -> ActivityDataDay? in
+                guard let date = HeatmapGridBuilder.calendar.date(byAdding: .day, value: offset, to: start) else {
+                    return nil
+                }
+                return ActivityDataDay(
+                    date: formatter.string(from: date),
+                    movingTime: offset == 0 ? 1.5 : 0
+                )
+            }
+            let document = ActivityDataDocument(
+                schemaVersion: 1,
+                generatedAt: "2026-11-27T11:47:53Z",
+                timezone: "Europe/Rome",
+                window: ActivityDataWindow(start: "2025-11-28", end: "2026-11-27"),
+                days: activityDays
+            )
+
+            try document.validate()
+            let converted = try document.contributionDays()
+            assertEqual(converted.count, 365, "Activity data should produce 365 daily cells")
+            assertEqual(converted[0].count, 5_400, "1.5 hours should be converted to 5,400 seconds")
+            assertEqual(converted[1].count, 0, "Inactive dates should remain zero")
+        } catch {
+            failed += 1
+            print("❌ Valid activity JSON validation failed: \(error)")
+        }
+
+        // Invalid activity values must be rejected.
+        do {
+            let invalidDays = (0..<365).compactMap { offset -> ActivityDataDay? in
+                let date = HeatmapGridBuilder.calendar.date(
+                    byAdding: .day,
+                    value: offset,
+                    to: HeatmapGridBuilder.calendar.date(from: DateComponents(year: 2025, month: 11, day: 28))!
+                )!
+                let formatter = DateFormatter()
+                formatter.locale = Locale(identifier: "en_US_POSIX")
+                formatter.calendar = Calendar(identifier: .gregorian)
+                formatter.timeZone = TimeZone(identifier: "UTC")!
+                formatter.dateFormat = "yyyy-MM-dd"
+                return ActivityDataDay(date: formatter.string(from: date), movingTime: offset == 0 ? -1 : 0)
+            }
+            let invalidDocument = ActivityDataDocument(
+                schemaVersion: 1,
+                generatedAt: "2026-11-27T11:47:53Z",
+                timezone: "Europe/Rome",
+                window: ActivityDataWindow(start: "2025-11-28", end: "2026-11-27"),
+                days: invalidDays
+            )
+            do {
+                try invalidDocument.validate()
+                assertTrue(false, "Negative moving_time must be rejected")
+            } catch {
+                assertTrue(true, "Negative moving_time rejected")
+            }
+        }
+
         print("🏁 Test Run Finished!")
         print("✅ Passed: \(passed)")
         print("❌ Failed: \(failed)")
