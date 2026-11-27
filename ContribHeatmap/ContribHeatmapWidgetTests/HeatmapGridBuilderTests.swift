@@ -168,7 +168,7 @@ struct HeatmapTestsRunner {
             }
             let pipelinePayload: [String: Any] = [
                 "schema_version": 1,
-                "generated_at": "2026-11-27T11:47:53Z",
+                "generated_at": "2026-11-27T11:47:53.125Z",
                 "timezone": "Europe/Rome",
                 "window": [
                     "start": "2025-11-28",
