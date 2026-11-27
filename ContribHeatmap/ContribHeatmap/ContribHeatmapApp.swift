@@ -328,7 +328,7 @@ struct ContentView: View {
             .padding(.horizontal)
             .padding(.bottom, 16)
         }
-        .frame(width: 650, height: 380)
+        .frame(width: 650, height: 500)
         .onAppear {
             let active = ContributionCache.getActiveUsername() ?? savedUsername
             activeWidgetUsername = active
