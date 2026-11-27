@@ -167,8 +167,10 @@ struct HeatmapTestsRunner {
                 days: activityDays
             )
 
-            try document.validate()
-            let converted = try document.contributionDays()
+            let encodedDocument = try JSONEncoder().encode(document)
+            let decodedDocument = try JSONDecoder().decode(ActivityDataDocument.self, from: encodedDocument)
+            try decodedDocument.validate()
+            let converted = try decodedDocument.contributionDays()
             assertEqual(converted.count, 365, "Activity data should produce 365 daily cells")
             assertEqual(converted[0].count, 5_400, "1.5 hours should be converted to 5,400 seconds")
             assertEqual(converted[1].count, 0, "Inactive dates should remain zero")
