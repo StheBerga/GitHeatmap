@@ -466,7 +466,7 @@
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
 				LE_BUILD_SYSTEM_INFOPLIST_FILE = NO;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.yourname.ContribHeatmap";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.stheberga.GitHeatmap";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
@@ -490,7 +490,7 @@
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
 				LE_BUILD_SYSTEM_INFOPLIST_FILE = NO;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.yourname.ContribHeatmap";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.stheberga.GitHeatmap";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
@@ -508,7 +508,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "Contrib Heatmap";
 				LE_BUILD_SYSTEM_INFOPLIST_FILE = NO;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.yourname.ContribHeatmap.ContribHeatmapWidget";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.stheberga.GitHeatmap.GitHeatmapWidget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -527,7 +527,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "Contrib Heatmap";
 				LE_BUILD_SYSTEM_INFOPLIST_FILE = NO;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.yourname.ContribHeatmap.ContribHeatmapWidget";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.stheberga.GitHeatmap.GitHeatmapWidget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -543,7 +543,7 @@
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.yourname.ContribHeatmap.ContribHeatmapWidgetTests";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.stheberga.GitHeatmap.Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 6.0;
 				TEST_TARGET_NAME = ContribHeatmapWidget;
@@ -558,7 +558,7 @@
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.yourname.ContribHeatmap.ContribHeatmapWidgetTests";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.stheberga.GitHeatmap.Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 6.0;
 				TEST_TARGET_NAME = ContribHeatmapWidget;
