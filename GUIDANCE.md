@@ -65,8 +65,16 @@ Macos-Github-Widget/
   - Today's cell is identified by the last non-future cell in the final column and outlined with a $1\text{pt}$ stroke border.
 
 ### 4. `ContributionCache` & App Group Container
-- Location: Checks for `group.com.yourname.ContribHeatmap` via `FileManager.default.containerURL(forSecurityApplicationGroupIdentifier:)`.
-- If running under ad-hoc local development without an active Apple Developer certificate, automatically falls back to `Application Support/ContribHeatmapWidget`.
+- The shared container identifier is `group.com.stheberga.githeatmap` and is enabled in both the app and widget entitlement files.
+- GitHub contribution cache persistence remains separate from the running-activity JSON cache.
+- Local signing requires the App Group to be enabled for the app and widget identifiers in the Apple Developer account/team used by Xcode.
+
+### 5. Running Activity source
+- `ActivityDataService` downloads `data/activity_data.json` from the private `StheBerga/running-heatmap-data` repository using the GitHub Contents API.
+- `ActivityTokenStore` stores the fine-grained token in the macOS Keychain. The token is not written into the App Group container.
+- `ActivityDataDocument.validate()` checks schema version, timezone, timestamp, 365-day window, consecutive dates, and finite non-negative moving-time values.
+- `ActivityDataCache` writes only the validated JSON document to the shared App Group container. The widget reads it locally and does not need the token.
+- Sync is initiated from the companion app. After syncing, the app requests a WidgetKit timeline reload. Regular timeline reloads do not themselves fetch the private JSON.
 
 ---
 
