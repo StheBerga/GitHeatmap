@@ -207,45 +207,53 @@ struct HeatmapWidgetView: View {
                 )
                 .frame(width: totalContentW)
 
-                // Grid Area
-                HStack(alignment: .top, spacing: labelSpacing) {
-                    if isMedium {
-                        VStack(spacing: gap) {
-                            ForEach(0..<rows, id: \.self) { r in
-                                Text(weekdayLabel(for: r))
-                                    .font(.system(size: 9, weight: .medium, design: .rounded))
-                                    .foregroundStyle(.secondary)
-                                    .frame(width: labelColWidth, height: cell, alignment: .trailing)
-                                    .accessibilityHidden(true)
+                // Grid Area (or a clear message when the selected source has no data).
+                if let errorMessage = entry.errorMessage {
+                    Label(errorMessage, systemImage: "exclamationmark.triangle")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .frame(width: totalContentW, height: actualGridH)
+                } else {
+                    HStack(alignment: .top, spacing: labelSpacing) {
+                        if isMedium {
+                            VStack(spacing: gap) {
+                                ForEach(0..<rows, id: \.self) { r in
+                                    Text(weekdayLabel(for: r))
+                                        .font(.system(size: 9, weight: .medium, design: .rounded))
+                                        .foregroundStyle(.secondary)
+                                        .frame(width: labelColWidth, height: cell, alignment: .trailing)
+                                        .accessibilityHidden(true)
+                                }
                             }
                         }
-                    }
 
-                    HStack(alignment: .top, spacing: gap) {
-                        ForEach(entry.weeks) { week in
-                            VStack(spacing: gap) {
-                                ForEach(0..<rows, id: \.self) { rowIdx in
-                                    if let day = week.days[rowIdx] {
-                                        let isToday = (day.id == todayCellId)
-                                        HeatmapCell(
-                                            day: day,
-                                            isToday: isToday,
-                                            size: cell,
-                                            cornerRadius: cornerRadius,
-                                            renderingMode: renderingMode
-                                        )
-                                    } else {
-                                        Color.clear.frame(width: cell, height: cell)
+                        HStack(alignment: .top, spacing: gap) {
+                            ForEach(entry.weeks) { week in
+                                VStack(spacing: gap) {
+                                    ForEach(0..<rows, id: \.self) { rowIdx in
+                                        if let day = week.days[rowIdx] {
+                                            let isToday = (day.id == todayCellId)
+                                            HeatmapCell(
+                                                day: day,
+                                                isToday: isToday,
+                                                size: cell,
+                                                cornerRadius: cornerRadius,
+                                                renderingMode: renderingMode
+                                            )
+                                        } else {
+                                            Color.clear.frame(width: cell, height: cell)
+                                        }
                                     }
                                 }
                             }
                         }
+                        .frame(width: actualGridW, height: actualGridH)
                     }
-                    .frame(width: actualGridW, height: actualGridH)
+                    .frame(width: totalContentW, height: actualGridH)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("\(entry.title): \(entry.totalDisplay) in the last \(weekCount) weeks")
                 }
-                .frame(width: totalContentW, height: actualGridH)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel("\(entry.title): \(entry.totalDisplay) in the last \(weekCount) weeks")
             }
             .frame(width: geo.size.width, height: geo.size.height, alignment: .center)
         }
