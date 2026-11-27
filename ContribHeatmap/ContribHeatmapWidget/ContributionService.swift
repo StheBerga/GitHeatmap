@@ -115,7 +115,7 @@ actor ContributionService {
 import Security
 
 enum ActivityTokenStore {
-    private static let service = "com.yourname.GitHeatmap"
+    private static let service = "com.stheberga.GitHeatmap"
     private static let account = "running-heatmap-data"
 
     static func save(_ token: String) throws {
