@@ -174,7 +174,7 @@ private struct GitHubContentsResponse: Decodable {
     let encoding: String
 }
 
-enum ActivitySyncError: LocalizedError {
+enum ActivitySyncError: LocalizedError, Sendable {
     case missingToken
     case invalidResponse
     case httpStatus(Int)
